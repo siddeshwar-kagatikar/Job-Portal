@@ -1,0 +1,90 @@
+docker volume create portainer_data
+docker run -d -p 9000:9000 -p 8000:8000 --name=portainer --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data \
+  portainer/portainer-ce
+
+
+because i ran the above command localhost:9000 is running for docker. dont run the command again. directly enter the url
+
+http://localhost:9000
+
+-------------------------------------------------------------------------------------------
+
+docker run -d --name db -e POSTGRES_PASSWORD=mysecretpassword postgres
+
+docker run -d --name pgadmin -e PGADMIN_DEFAULT_EMAIL=user@domain.com -e
+PGADMIN_DEFAULT_PASSWORD=SuperSecret dpage/pgadmin4
+
+docker exec -it pgadmin ping db
+
+docker rm -f db pgadmin
+
+USING NETWORKS:
+docker run -d --name db --network my-network -e POSTGRES_PASSWORD=mysecretpassword postgres
+
+docker run -d --name pgadmin --network my-network -e PGADMIN_DEFAULT_EMAIL=user@domain.com -e PGADMIN_DEFAULT_PASSWORD=SuperSecret dpage/pgadmin4
+
+docker exec -it pgadmin ping db
+-------------------------------------------------------------------------------------------
+Start the PostgreSQL service:
+docker run -d \
+  --name postgres_container \
+  -e POSTGRES_USER=embarkx \
+  -e POSTGRES_PASSWORD=embarkx \
+  -e PGDATA=/data/postgres \
+  -v postgres:/data/postgres \
+  -p 5432:5432 \
+  --network postgres \
+  --restart unless-stopped \
+  postgres
+
+Start the pgAdmin service:
+  docker run -d \
+  --name pgadmin_container \
+  -e PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org \
+  -e PGADMIN_DEFAULT_PASSWORD=admin \
+  -e PGADMIN_CONFIG_SERVER_MODE=False \
+  -V pgadmin:/var/lib/pgadmin \
+  -p 5050:80 \
+  --network postgres
+  --restart unless-stopped \
+  dpage/pgadmin4
+-------------------------------------------------------------------------------------------
+services:
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: siddu
+      POSTGRES_PASSWORD: siddu
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped I
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL: -pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD: -admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin: /var/lib/ogadmin
+    ports:
+      -"5050:80"
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
+
+
